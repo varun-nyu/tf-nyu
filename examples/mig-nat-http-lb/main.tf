@@ -15,37 +15,34 @@
  */
 
 provider "google" {
-  project = var.project
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+  credentials = file(var.credential_file)
 }
 
 provider "google-beta" {
-  project = var.project
+  project = var.project_id
 }
 
-resource "google_compute_network" "default" {
+data "google_compute_network" "default" {
   name                    = var.network_name
-  auto_create_subnetworks = false
 }
 
-resource "google_compute_subnetwork" "default" {
-  name                     = var.network_name
-  ip_cidr_range            = "10.127.0.0/20"
-  network                  = google_compute_network.default.self_link
-  region                   = var.region
-  private_ip_google_access = true
+data "google_compute_subnetwork" "default" {
+  name                     = var.sub_network_name
 }
 
 resource "google_compute_router" "default" {
-  name    = "lb-http-router"
-  network = google_compute_network.default.self_link
-  region  = var.region
+  name    = "default-route-4d58f74b4380253e"
+  network = data.google_compute_network.default.name
 }
 
 module "cloud-nat" {
   source     = "terraform-google-modules/cloud-nat/google"
   version    = "1.0.0"
   router     = google_compute_router.default.name
-  project_id = var.project
+  project_id = var.project_id
   region     = var.region
   name       = "cloud-nat-lb-http-router"
 }
@@ -61,8 +58,7 @@ data "template_file" "group-startup-script" {
 module "mig_template" {
   source     = "terraform-google-modules/vm/google//modules/instance_template"
   version    = "1.0.0"
-  network    = google_compute_network.default.self_link
-  subnetwork = google_compute_subnetwork.default.self_link
+  subnetwork = data.google_compute_subnetwork.default.self_link
   service_account = {
     email  = ""
     scopes = ["cloud-platform"]
@@ -86,16 +82,15 @@ module "mig" {
     name = "http",
     port = 80
   }]
-  network    = google_compute_network.default.self_link
-  subnetwork = google_compute_subnetwork.default.self_link
+  subnetwork = var.subnetwork
 }
 
 module "gce-lb-http" {
   source            = "../../"
   name              = "mig-http-lb"
-  project           = var.project
+  project           = var.project_id
   target_tags       = [var.network_name]
-  firewall_networks = [google_compute_network.default.name]
+  firewall_networks = [data.google_compute_network.default.name]
 
 
   backends = {

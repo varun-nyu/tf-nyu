@@ -15,17 +15,43 @@
  */
 
 variable "region" {
-  default = "us-west1"
+  type        = string
+  description = "VM instance region"
+  default     = "us-central1"
 }
 
 variable "zone" {
-  default = "us-west1-b"
+  type        = string
+  description = "VM Instance Zone"
+  default     = "us-central1-c"
+}
+
+variable "subnetwork" {
+  type        = string
+  description = "Project subnetwork"
+  default     = "https://www.googleapis.com/compute/v1/projects/vo383-mark1-c066/regions/us-central1/subnetworks/vo383-mark1-subnet-01"
+}
+
+variable "project_id" {
+  type        = string
+  description = "The GCP project ID"
+  default     = "vo383-mark1-c066"
+}
+
+variable "credential_file" {
+  type        = string
+  description = "Project credential file"
+  default     = "./../../credentials.json"
 }
 
 variable "network_name" {
-  default = "tf-lb-http-mig-nat"
+  default = "vo383-mark1-net"
 }
 
-variable "project" {
-  type = string
+variable "sub_network_name" {
+  default = "vo383-mark1-subnet-01"
+}
+
+variable "router_name" {
+  default = "vo383-mark1-subnet-01"
 }

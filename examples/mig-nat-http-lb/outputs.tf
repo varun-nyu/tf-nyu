@@ -21,3 +21,9 @@ output "load-balancer-ip" {
 output "backend_services" {
   value = module.gce-lb-http.backend_services
 }
+
+/**
+*output "router_name" {
+*  value = data.google_compute_router.default.name
+*}
+*/
