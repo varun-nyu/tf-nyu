@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-output "load-balancer-ip" {
-  value = module.gce-lb-http.external_ip
+output "network_link" {
+  value = data.google_compute_network.default.self_link
 }
 
-output "backend_services" {
-  value = module.gce-lb-http.backend_services
+output "subnetwork_link" {
+  value = data.google_compute_subnetwork.default.self_link
 }
 
-/**
-*output "router_name" {
-*  value = data.google_compute_router.default.name
-*}
-*/

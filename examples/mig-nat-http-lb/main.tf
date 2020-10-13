@@ -14,27 +14,40 @@
  * limitations under the License.
  */
 
-provider "google" {
-  project = var.project_id
+ locals{
+  project_id = var.project_id
   region  = var.region
   zone    = var.zone
+  network_name                    = var.network_name
+  subnetowrk_name                    = var.sub_network_name
+ }
+
+provider "google" {
+  project = local.project_id
+  region  = local.region
+  zone    = local.zone
   credentials = file(var.credential_file)
 }
 
 provider "google-beta" {
-  project = var.project_id
+  project = local.project_id
+  region  = local.region
+  zone    = local.zone
+  credentials = file(var.credential_file)
 }
 
 data "google_compute_network" "default" {
-  name                    = var.network_name
+  name                    = local.network_name
+  project = local.project_id
 }
 
 data "google_compute_subnetwork" "default" {
-  name                     = var.sub_network_name
+  name                     = local.subnetowrk_name
+  project = local.project_id
 }
 
 resource "google_compute_router" "default" {
-  name    = "default-route-4d58f74b4380253e"
+  name    = "vo383-lb-router"
   network = data.google_compute_network.default.name
 }
 
@@ -59,10 +72,7 @@ module "mig_template" {
   source     = "terraform-google-modules/vm/google//modules/instance_template"
   version    = "1.0.0"
   subnetwork = data.google_compute_subnetwork.default.self_link
-  service_account = {
-    email  = ""
-    scopes = ["cloud-platform"]
-  }
+  service_account = var.service_account
   name_prefix    = var.network_name
   startup_script = data.template_file.group-startup-script.rendered
   tags = [
